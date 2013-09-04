@@ -8,7 +8,7 @@ Install
 
 You can install this package by importing this in your own go code.
 
-  import "github.com/jpfairbanks/timing"
+    import "github.com/jpfairbanks/timing"
 
 Then call go test in the repository to run the test cases.
 

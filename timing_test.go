@@ -9,8 +9,10 @@ package timing
 import (
 	"testing"
 	"time"
+	"fmt"
 	"errors"
 	"strings"
+	"math"
 )
 
 //validate: Make sure that the timer is valid
@@ -23,8 +25,8 @@ func (tg Timing) validate() error {
 	if tg.length != len(tg.te){
 		err = errors.New("te is wrong length")
 	}
-	if tg.length != len(tg.td){
-		err = errors.New("td is wrong length")
+	if tg.length != len(tg.Td){
+		err = errors.New("Td is wrong length")
 	}
 	for i, _ := range tg.te{
 		if tg.te[i].Sub(tg.ts[i]) < 0{
@@ -98,7 +100,7 @@ func dummyTiming() Timing {
 	n:=5
 	tg := New(n)
 	for i:=0; i<n; i++{
-		tg.td[i] = time.Duration(i)*time.Second
+		tg.Td[i] = time.Duration(i)*time.Second
 	}
 	return tg
 }
@@ -106,7 +108,7 @@ func dummyTiming() Timing {
 func TestString(t *testing.T){
 	tg := dummyTiming()
 	out := tg.String()
-	answer := "[0 1s 2s 3s 4s]"
+	answer := "0 1000000000 2000000000 3000000000 4000000000"
 	if !strings.EqualFold(out, answer) {
 		t.Error(answer)
 		t.Error(out)
@@ -116,7 +118,7 @@ func TestString(t *testing.T){
 func TestKeyString(t *testing.T){
 	tg := dummyTiming()
 	out := tg.KeyString("testkey")
-	answer := "testkey:[0 1s 2s 3s 4s],"
+	answer := "testkey:[0 1000000000 2000000000 3000000000 4000000000],"
 	if !strings.EqualFold(out, answer) {
 		t.Error(answer)
 		t.Error(out)
@@ -126,9 +128,41 @@ func TestKeyString(t *testing.T){
 func TestTupleString(t *testing.T){
 	tg := dummyTiming()
 	out := tg.TupleString("\n")
-	answer := "0 0\n1 1s\n2 2s\n3 3s\n4 4s"
+	answer := "0 0\n1 1000000000\n2 2000000000\n3 3000000000\n4 4000000000"
 	if !strings.EqualFold(out, answer) {
 		t.Error(answer)
 		t.Error(out)
 	}
+}
+
+func TestResolution(t *testing.T){
+	var count int64
+	var i int64
+	count = 100000
+	var tstart time.Time
+	var tend   time.Time
+	var td     int64
+	var tsum   int64
+	var sumsqr int64
+	tdarr := make([]int64, count)
+	for i = 0; i < count; i++{
+		tstart = time.Now()
+		tend = time.Now()
+		td = tend.Sub(tstart).Nanoseconds()
+		//fmt.Printf("%d ", td)
+		tdarr[i] = td
+		tsum += td
+		sumsqr += td * td
+	}
+	mean := tsum/count
+	variance := (sumsqr/(count) - mean*mean)
+	vari := float64(0)
+	for i=0; i < count; i++{
+		x := float64(tdarr[i]) - float64(mean)
+		vari += x*x
+	}
+	fmt.Printf("mean: %v\n", mean)
+	fmt.Printf("variance: %v\n", variance)
+	fmt.Printf("stddev: %v\n", math.Sqrt(float64(variance)))
+	//fmt.Println(tdarr)
 }

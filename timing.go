@@ -16,7 +16,7 @@ import(
 type Timing struct {
     ts []time.Time
     te []time.Time
-    td []time.Duration
+    Td []time.Duration
     length int
 }
 
@@ -24,8 +24,8 @@ type Timing struct {
 func New(n int) Timing {
     ts := make([]time.Time, n)
     te := make([]time.Time, n)
-    td := make([]time.Duration, n)
-	tg := Timing{ts, te, td, n}
+    Td := make([]time.Duration, n)
+	tg := Timing{ts, te, Td, n}
 	return tg
 }
 
@@ -42,26 +42,31 @@ func (tg Timing) Toc(i int) {
 //Resolve: compute the deltas all at once.
 func (tg Timing) Resolve() {
     for i:=0; i < tg.length; i++ {
-		tg.td[i] = tg.te[i].Sub(tg.ts[i])
+		tg.Td[i] = tg.te[i].Sub(tg.ts[i])
     }
 }
 
 //String: Basic representation of the deltas.
 func (tg Timing) String() string {
-    return fmt.Sprintf("%v", tg.td)
+	arr := make([]string, len(tg.Td))
+	for i,t := range tg.Td{
+		arr[i] = fmt.Sprintf("%d", t)
+	}
+	str := strings.Join(arr, " ")
+    return str
 }
 
 //KeyString: Json friendly representation of the deltas.
 func (tg Timing) KeyString(key string) string {
-    return fmt.Sprintf("%s:%v,", key, tg.td)
+    return fmt.Sprintf("%s:%d,", key, tg.Td)
 }
 
 //TupleString: Columnar representation of the deltas for printing to a file.
 func (tg Timing) TupleString(sep string) string {
 	var lines []string
 	lines = make([]string, tg.length)
-	for index, dura := range tg.td{
-		lines[index] = fmt.Sprintf("%d %v", index, dura)
+	for index, dura := range tg.Td{
+		lines[index] = fmt.Sprintf("%d %v", index, dura.Nanoseconds())
 	}
 	bigstring := strings.Join(lines, sep)
     return bigstring

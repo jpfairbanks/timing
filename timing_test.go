@@ -174,7 +174,6 @@ func TestAccuracy(t *testing.T) {
 	var tend time.Time
 	var td int64
 	var tsum int64
-	var sumsqr int64
 	tdarr := make([]int64, count)
 	for i = 0; i < count; i++ {
 		tstart = time.Now()
@@ -184,17 +183,16 @@ func TestAccuracy(t *testing.T) {
 		//fmt.Printf("%d ", td)
 		tdarr[i] = td
 		tsum += td
-		sumsqr += td * td
 	}
-	mean := tsum / count
-	variance := (sumsqr/(count) - mean*mean)
+	var mean float64 = float64(tsum) / float64(count)
 	vari := float64(0)
 	for i = 0; i < count; i++ {
 		x := float64(tdarr[i]) - float64(mean)
 		vari += x * x
 	}
+	vari = vari / float64(count-1)
 	fmt.Printf("mean: %v\n", mean)
-	fmt.Printf("variance: %v\n", variance)
-	fmt.Printf("stddev: %v\n", math.Sqrt(float64(variance)))
+	fmt.Printf("variance: %v\n", vari)
+	fmt.Printf("stddev: %v\n", math.Sqrt(float64(vari)))
 	//fmt.Println(tdarr)
 }
